@@ -6,7 +6,7 @@ from datetime import datetime
 import uuid
 
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="app/templates")
 
 # In-memory database (replace with a real database in production)
 guestbook_entries = []
