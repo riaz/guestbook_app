@@ -1,38 +1,45 @@
-from time import time
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, Request, Form, HTTPException
+from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
+from datetime import datetime
+import uuid
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
-html = f"""
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>FastAPI on Vercel</title>
-        <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
-    </head>
-    <body>
-        <div class="bg-gray-200 p-4 rounded-lg shadow-lg">
-            <h1>Hello from FastAPI</h1>
-            <ul>
-                <li><a href="/docs">/docs</a></li>
-                <li><a href="/redoc">/redoc</a></li>
-            </ul>
-            <p>Powered by <a href="https://vercel.com" target="_blank">Vercel</a></p>
-        </div>
-    </body>
-</html>
-"""
+# In-memory database (replace with a real database in production)
+guestbook_entries = []
 
-@app.get("/")
-async def root():
-    return HTMLResponse(html)
+class GuestbookEntry(BaseModel):
+    id: str
+    name: str
+    message: str
+    timestamp: datetime
 
-@app.get('/ping')
-async def hello():
-    return {'res': 'pong', "time": time()}
+@app.get("/", response_class=HTMLResponse)
+async def read_guestbook(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request, "entries": guestbook_entries})
+
+@app.post("/add_entry")
+async def add_entry(name: str = Form(...), message: str = Form(...)):
+    entry = GuestbookEntry(
+        id=str(uuid.uuid4()),
+        name=name,
+        message=message,
+        timestamp=datetime.now()
+    )
+    guestbook_entries.append(entry)
+    return {"message": "Entry added successfully"}
+
+@app.delete("/delete_entry/{entry_id}")
+async def delete_entry(entry_id: str):
+    for entry in guestbook_entries:
+        if entry.id == entry_id:
+            guestbook_entries.remove(entry)
+            return {"message": "Entry deleted successfully"}
+    raise HTTPException(status_code=404, detail="Entry not found")
 
 if __name__ == "__main__":
-    app.run()
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
