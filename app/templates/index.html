@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guestbook</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #333; }
+        form { margin-bottom: 20px; }
+        input, textarea { display: block; margin-bottom: 10px; width: 100%; }
+        button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; cursor: pointer; }
+        ul { list-style-type: none; padding: 0; }
+        li { background-color: #f1f1f1; margin-bottom: 10px; padding: 10px; position: relative; }
+        .timestamp { font-size: 0.8em; color: #666; }
+        .delete-btn { position: absolute; top: 5px; right: 5px; background-color: #f44336; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Guestbook</h1>
+    <form id="guestbook-form">
+        <input type="text" id="name" name="name" placeholder="Your Name" required>
+        <textarea id="message" name="message" placeholder="Your Message" required></textarea>
+        <button type="submit">Submit</button>
+    </form>
+    <ul id="entries">
+        {% for entry in entries %}
+        <li>
+            <strong>{{ entry.name }}</strong>: {{ entry.message }}
+            <br>
+            <span class="timestamp">{{ entry.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+            <button class="delete-btn" onclick="deleteEntry('{{ entry.id }}')">Delete</button>
+        </li>
+        {% endfor %}
+    </ul>
+    <script>
+        document.getElementById('guestbook-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch('/add_entry', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                location.reload();
+            }
+        });
+
+        async function deleteEntry(entryId) {
+            const response = await fetch(`/delete_entry/${entryId}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
