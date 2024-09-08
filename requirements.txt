@@ -1,5 +1,5 @@
-fastapi==0.68.0
-uvicorn==0.15.0
+fastapi[all]
+uvicorn
 jinja2==3.0.1
 python-multipart==0.0.5
-pydantic==1.8.2
+pydantic

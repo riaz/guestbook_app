@@ -1,5 +1,5 @@
 from time import time
-from fastapi import FastAPI, __version__
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 
@@ -15,7 +15,7 @@ html = f"""
     </head>
     <body>
         <div class="bg-gray-200 p-4 rounded-lg shadow-lg">
-            <h1>Hello from FastAPI@{__version__}</h1>
+            <h1>Hello from FastAPI</h1>
             <ul>
                 <li><a href="/docs">/docs</a></li>
                 <li><a href="/redoc">/redoc</a></li>
@@ -32,4 +32,7 @@ async def root():
 
 @app.get('/ping')
 async def hello():
-    return {'res': 'pong', 'version': __version__, "time": time()}
+    return {'res': 'pong', "time": time()}
+
+if __name__ == "__main__":
+    app.run()
